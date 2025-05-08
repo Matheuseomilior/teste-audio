@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Teste de Memória Auditiva</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    #player {
+      margin: 20px auto;
+    }
+    #mensagem {
+      display: none;
+      font-size: 24px;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Teste de Memória Auditiva</h1>
+  <div id="player"></div>
+  <div id="mensagem">O vídeo não está mais disponível.</div>
+
+  <!-- API do YouTube -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    let player;
+    let lastTime = 0;
+    let checkInterval;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '390',
+        width: '640',
+        videoId: '7p7e_g0aBus',
+        playerVars: {
+          controls: 0,       // Sem controles
+          disablekb: 1,      // Sem teclado
+          modestbranding: 1,
+          rel: 0
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      event.target.playVideo();
+
+      // Impede retrocesso ou avanço manual
+      checkInterval = setInterval(() => {
+        const currentTime = player.getCurrentTime();
+        if (currentTime < lastTime - 0.5) {
+          player.seekTo(lastTime);
+        } else {
+          lastTime = currentTime;
+        }
+      }, 500);
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.PAUSED) {
+        player.playVideo(); // Reativa se pausado
+      }
+      if (event.data === YT.PlayerState.ENDED) {
+        clearInterval(checkInterval);
+        document.getElementById('player').style.display = 'none';
+        document.getElementById('mensagem').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
